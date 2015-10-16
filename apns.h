@@ -8,7 +8,6 @@
 
 #include <iosfwd>
 #include <string>
-#include <tic.h>
 #include <openssl/ssl.h>
 #include <openssl/rand.h>
 #include <openssl/bio.h>
@@ -19,8 +18,10 @@ class apns {
 public:
     apns(std::string pem);
 
+    void connect();
     void send(std::string token, std::string payload);
     void send(std::string token, std::string body, int badge);
+    void close();
 
 private:
     void token2bytes(std::string token, char* bytes);

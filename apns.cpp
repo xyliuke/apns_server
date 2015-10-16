@@ -5,7 +5,9 @@
 
 #include <sstream>
 #include "apns.h"
-
+#ifdef __linux__
+#include <arpa/inet.h>
+#endif
 
 std::string apns::host = "gateway.sandbox.push.apple.com:2195";
 
@@ -49,7 +51,8 @@ int apns::push_msg_impl(std::string token, std::string payload)
     return ret;
 }
 
-void apns::send(std::string token, std::string payload)
+
+void apns::connect()
 {
     SSL_load_error_strings();
     ERR_load_BIO_strings();
@@ -59,6 +62,7 @@ void apns::send(std::string token, std::string payload)
     ctx = SSL_CTX_new(SSLv23_client_method());
     if (SSL_CTX_use_certificate_chain_file(ctx, pem_file.c_str()) != 1) {
         printf("Error loading certificate from file\n");
+        ctx = NULL;
         return;
     }
 
@@ -86,16 +90,32 @@ void apns::send(std::string token, std::string payload)
         printf("Error connecting SSL object>>%d\n", slRc);
         return;
     }
-    int ret = push_msg_impl(token,payload);
+}
+
+void apns::send(std::string token, std::string payload)
+{
+    if (ssl && ctx) {
+        int ret = push_msg_impl(token,payload);
+    } else {
+        printf("send data error");
+    }
+}
+
+void apns::close()
+{
+    if(ssl) {
+        SSL_shutdown(ssl);
+        SSL_free(ssl);
+        ssl = NULL;
+    }
+    if(ctx) {
+        SSL_CTX_free(ctx);
+        ctx = NULL;
+    }
 }
 
 void apns::send(std::string token, std::string body, int badge)
 {
-//    std::string payload = "{\"aps\":{\"alert\":\"";// + body + "\",\"badge\":" + badge + "}}";
-//    payload.append(body);
-//    payload.append("\",\"badge\":");
-//    payload.append(1);
-
     std::stringstream ss;
     ss << "{\"aps\":{\"alert\":\"";
     ss << body;
