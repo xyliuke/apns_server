@@ -17,10 +17,11 @@
 class apns {
 public:
     apns(std::string pem);
-
+    ~apns();
     void connect();
     void send(std::string token, std::string payload);
     void send(std::string token, std::string body, int badge);
+    void send(std::string token, std::string body, int badge, std::string sound);
     void close();
 
 private:

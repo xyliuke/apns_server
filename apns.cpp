@@ -121,7 +121,20 @@ void apns::send(std::string token, std::string body, int badge)
     ss << body;
     ss << "\",\"badge\":";
     ss << badge;
-    ss << "}}";
+    ss << ",\"sound\":\"default\"}}";
+    send(token, ss.str());
+}
+
+void apns::send(std::string token, std::string body, int badge, std::string sound)
+{
+    std::stringstream ss;
+    ss << "{\"aps\":{\"alert\":\"";
+    ss << body;
+    ss << "\",\"badge\":";
+    ss << badge;
+    ss << ",\"sound\":\"";
+    ss << sound;
+    ss << "\"}}";
     send(token, ss.str());
 }
 
@@ -140,4 +153,9 @@ void apns::token2bytes(std::string token, char *bytes)
             ++token_char;
         }
     }
+}
+
+apns::~apns()
+{
+    close();
 }
